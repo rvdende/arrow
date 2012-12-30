@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<head>
+	<meta charset="utf-8">
+	<title>Arrow</title>
+	<script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="/scripts/jquery-1.7.1.min.js"></script>	
+  <script src="/scripts/processing-1.4.1.min.js"></script>
+  <style>
+    * {margin: 0; padding:0;}
+  </style>
+</head>
+<body>
+
+
+ 
+		<canvas id="processing" style="width: 100%; height: 100%;"></canvas>
+		<script>			
+			
+      $( function() {	
+        //DATA
+        var databuf = []
+
+        $.getJSON('/record.json', function(data) {
+            //databuf = JSON.parse(data);
+            databuf = data;
+            
+        });
+
+        var socket = io.connect();
+
+        socket.on('sensor', function (data) { 
+          //console.log(data)
+            databuf.push(data.A0);
+        })				 
+
+        //VIEW
+        var view = 
+        {
+          height: 0,
+          width: 0
+        }
+        //CANVAS
+        var arrowCanvas = function (pr) {
+          pr.setup = function () 
+		      {			
+            view.height = $("#processing").height()
+            view.width = $("#processing").width()
+            pr.size( view.width, view.height );
+			      pr.background(55,55,55,255);
+			      pr.frameRate(60);    
+		      };
+
+		      pr.draw = function () 
+		      {
+            pr.fill(0, 0, 0, 255)
+            pr.noStroke()
+            pr.rect(0,0,view.width,view.height)
+            pr.stroke(255, 255, 255, 155)
+            //pr.line(10, 20, 30, 40)  
+            var yprev = 0
+            for (a in databuf) 
+            {                      
+              var b = a ;
+              if (b < 10) {b = 10;};
+              if (b > databuf.length) {b = databuf.length-2};
+              //pr.stroke(255,0,0,55)
+              //pr.line((b/1),databuf[b].A0, (b/1)-4,databuf[b].A0) 
+              pr.noStroke();
+              pr.fill(255, 0, 0, 55)
+              pr.ellipse( b/5 , databuf[b].A0, 8, 8)
+              //pr.stroke(0,255,0,155)
+              //pr.line(a,databuf[a].A1, a, 200) 
+            }
+            
+            
+            /*while (databuf.length > view.width) 
+            {
+                databuf = databuf.slice(databuf.length-view.width, databuf.length)
+            }*/
+            
+
+          };
+      
+          pr.mouseMoved = function () {}
+          pr.mouseClicked = function () { socket.emit("click", {}); }
+          
+
+        }//END CANVAS
+
+        //LINK TO HTML
+        var canvas = document.getElementById("processing");
+        var processing = new Processing(canvas, arrowCanvas);			  			
+
+        
+
+      }());
+		</script>		   
+
+	
+</body>
+</html>
