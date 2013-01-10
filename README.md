@@ -15,13 +15,12 @@ point your browser to http://127.0.0.1:3000/
 Todo
 =======
 
-- [X] Persistent data
-- [X] User signup/login/logout
-- [X] Sensor streaming
+- [ ] Persistent data
+- [ ] User signup/login/logout
+- [ ] Sensor streaming
 - [ ] Admin panel
-- [X] Initial usable release
+- [ ] Initial usable release
 - [ ] Email sending interface
 - [ ] Sensor configuration page
 
-
-
+robots!
