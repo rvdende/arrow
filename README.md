@@ -10,18 +10,18 @@ sudo node index.js
 
 point your browser to http://127.0.0.1:3000/
 
-[Imgur](http://i.imgur.com/s5PXZ.png)
+![Imgur](http://i.imgur.com/s5PXZ.png)
 
 Todo
 =======
 
-[X] Persistent data
-[X] User signup/login/logout
-[X] Sensor streaming
-[ ] Admin panel
-[X] Initial usable release
-[ ] Email sending interface
-[ ] Sensor configuration page
+- [X] Persistent data
+- [X] User signup/login/logout
+- [X] Sensor streaming
+- [ ] Admin panel
+- [X] Initial usable release
+- [ ] Email sending interface
+- [ ] Sensor configuration page
 
 
 
