@@ -1,0 +1,8 @@
+{
+	"domain": "127.0.0.1",
+	"httpport": 3000,
+	"maildomain": "mail.yourdomain.com",
+	"mailport": 25,
+	"sessionsecret": "aabbaabb11",
+	"dbhashsecret": "a1b2c3d4e5"
+}
