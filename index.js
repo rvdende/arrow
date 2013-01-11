@@ -50,7 +50,6 @@ function startserver() {
 
 
 	app.get('/', function(req,res) {
-		console.log('o')
 		var arrowevent = core.eventmake(req);	
 		core.record(database, arrowevent);
 		io.sockets.emit('event',  arrowevent );	
@@ -166,6 +165,52 @@ function startserver() {
 	/////////////
 	/////////////   SYSTEM API
 	/////////////
+
+	app.post('/api', function(req, res) {
+		var query = req.body;
+		
+		if (query.type == "search") {
+			var search = query.search;
+			var result = [];
+			for (var entry in database)	{ //Cycle over database
+				var perfectmatch = 0;
+				var counter = 0;
+				for (var property in search) { //Do matching
+					counter++;
+					if ((typeof(database[entry][property]) == 'string') && (query.matchcase == "false")) {						
+						//Case insenstive
+
+						if (database[entry][property].toLowerCase() == search[property].toLowerCase()) {
+							perfectmatch ++;
+						}
+					} 
+					else 
+					{						
+						//console.log('test '+ database[entry][property] + ' == ' + search[property])
+						//Case sensitive
+						if (database[entry][property] == search[property]) {
+							perfectmatch ++;
+						}	
+					}
+				}//end matching
+
+				//add if matched successfuly
+				if ((counter > 0) &&(perfectmatch == counter)) {
+					result.push(database[entry])
+				}
+			}//cycled over em all
+
+			//send it!! it is done.
+			res.send(result);
+		}//end "search"
+
+		//add more types
+
+		//add more types
+
+		//add more types
+
+	})
 
 	app.get('/api/database', function(req,res) {
 		res.send(database)
