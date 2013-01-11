@@ -9,3 +9,18 @@ edit config.json
 sudo node index.js
 
 point your browser to http://127.0.0.1:3000/
+
+![Imgur](http://i.imgur.com/s5PXZ.png)
+
+Todo
+=======
+
+- [ ] Persistent data
+- [ ] User signup/login/logout
+- [ ] Sensor streaming
+- [ ] Admin panel
+- [ ] Initial usable release
+- [ ] Email sending interface
+- [ ] Sensor configuration page
+
+robots!
