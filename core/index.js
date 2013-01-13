@@ -4,17 +4,22 @@ var arrow = {}
 arrow.datainterval = 10000;
 arrow.dataunsaved = false; //Flags true when our memory changes and causes a disc write; defaults to false when idle.
 
+//useful for country lookup
 var maxmind = require("./lib/geo/maxmind.js");
 arrow.geo = new maxmind.GeoIP();
 if (arrow.geo.getCountry("41.133.21.167") == "South Africa")  { arrow.geoEnabled = true; } else { arrow.geoEnabled = false; };
+
+//lat/long and city lookup
+arrow.geocity = require("./lib/geocity/geocity.js");
+arrow.geocity.load();
 
 
 
 arrow.status = function(database, req) {
 
 	var os = require('os');
-	var datastart = Date.now();
 	var user = {}
+
 	if (req.session.loggedin) {
 		user.name = req.session.loggedin.name;
 		user.hash = req.session.loggedin.hash;
@@ -27,16 +32,32 @@ arrow.status = function(database, req) {
 	var geoloc = arrow.geo.getCountry(req.ip);
 	if (geoloc == '') {geoloc = 'unknown'}
 
+	var geofull = arrow.geocity.lookup(req.ip);
+	var geo = {
+  		country : geofull[1],
+  		region : geofull[2],
+  		city : geofull[3],
+  		postalCode : geofull[4],
+  		latitude : geofull[5],
+  		longitude : geofull[6],
+  		metroCode : geofull[7],
+  		areaCode : geofull[8]
+	}
+	
+    //logged in?
 	req.session.loggedin = req.session.loggedin ? req.session.loggedin : 0;
 
-
+	//finds earliest date in database
+	var datastart = Date.now();
 	for (var entry in database) {
-		if (database[entry].timestamp < datastart) {datastart = database[entry].timestamp}
+		if (database[entry].timestamp < datastart) {datastart = database[entry].timestamp};
 	}
+
 	return {
 		type: "api",
 		ip: req.ip,
 		country: geoloc,
+		geo: geo,
 		name: user.name,
 		hash: user.hash,
 		pid: process.pid, 
