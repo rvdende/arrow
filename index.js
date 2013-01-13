@@ -53,9 +53,17 @@ function startserver() {
 		var arrowevent = core.eventmake(req);	
 		core.record(database, arrowevent);
 		io.sockets.emit('event',  arrowevent );	
-		var site = fs.createReadStream('public/index.html');
-		site.readable = true;
-		site.pipe(res, {end: true}); 	
+		if (req.session.loggedin) {
+			//logged in users
+			var site = fs.createReadStream('public/dash.html');
+			site.readable = true;
+			site.pipe(res, {end: true}); 	
+		} else {
+			//visiting guests/anon
+			var site = fs.createReadStream('public/index.html');
+			site.readable = true;
+			site.pipe(res, {end: true}); 	
+		}
 	})
 
 

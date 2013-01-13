@@ -2,6 +2,14 @@ console.log('loading arrow/core/index.js');
 
 var arrow = {}
 arrow.datainterval = 10000;
+arrow.dataunsaved = false; //Flags true when our memory changes and causes a disc write; defaults to false when idle.
+
+var maxmind = require("./lib/geo/maxmind.js");
+arrow.geo = new maxmind.GeoIP();
+if (arrow.geo.getCountry("41.133.21.167") == "South Africa")  { arrow.geoEnabled = true; } else { arrow.geoEnabled = false; };
+
+
+
 arrow.status = function(database, req) {
 
 	var os = require('os');
@@ -15,6 +23,10 @@ arrow.status = function(database, req) {
 		user.hash = ''
 	}
 
+	//GET GEO
+	var geoloc = arrow.geo.getCountry(req.ip);
+	if (geoloc == '') {geoloc = 'unknown'}
+
 	req.session.loggedin = req.session.loggedin ? req.session.loggedin : 0;
 
 
@@ -22,6 +34,24 @@ arrow.status = function(database, req) {
 		if (database[entry].timestamp < datastart) {datastart = database[entry].timestamp}
 	}
 	return {
+		type: "api",
+		ip: req.ip,
+		country: geoloc,
+		name: user.name,
+		hash: user.hash,
+		pid: process.pid, 
+		referer: req.header('Referer'),
+		host : req.headers.host,
+		useragent: req.headers['user-agent'],		
+		memory: process.memoryUsage().rss/1024/1024,
+		memoryusage: process.memoryUsage(),
+		uptime: process.uptime(),
+		osuptime: new Date(Date.now() - (os.uptime()*1000)),
+		servertime: Date.now(),
+		serverdate:  new Date(),
+		started: new Date(Date.now() - (process.uptime()*1000)),
+		datastart: datastart,
+		dataentries: database.length,
 		os: { 
 			hostname: os.hostname(),
 			type: os.type(),
@@ -34,19 +64,7 @@ arrow.status = function(database, req) {
 			freemem: os.freemem(),
 			cpus: os.cpus(),
 			networkInterfaces: os.networkInterfaces()
-		},
-		pid: process.pid, 
-		memory: process.memoryUsage().rss/1024/1024,
-		memoryusage: process.memoryUsage(),
-		uptime: process.uptime(),
-		osuptime: new Date(Date.now() - (os.uptime()*1000)),
-		servertime: Date.now(),
-		serverdate:  new Date(),
-		started: new Date(Date.now() - (process.uptime()*1000)),
-		datastart: datastart,
-		dataentries: database.length,
-		name: user.name,
-		hash: user.hash
+		},		
 		//connections: server.connections,
 	}
 }
@@ -78,11 +96,7 @@ arrow.fs = function(dir, done) {
 	  });
 };
 
-var maxmind = require("./lib/geo/maxmind.js");
-arrow.geo = new maxmind.GeoIP();
-if (arrow.geo.getCountry("41.133.21.167") == "South Africa")  { arrow.geoEnabled = true; } else { arrow.geoEnabled = false; };
 
-arrow.dataunsaved = false; //Flags true when our memory changes and causes a disc write; defaults to false when idle.
 
 arrow.eventmake = function(req) {
 	arrow.dataunsaved = true; //event occured, so it will be logged to disc
