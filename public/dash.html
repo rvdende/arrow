@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+
+	<!-- Basic Page Needs
+  ================================================== -->
+	<meta charset="utf-8">
+	<title>arrow</title>
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<!-- Mobile Specific Metas
+  ================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+  ================================================== -->
+	<link rel="stylesheet" href="/stylesheets/base.css">
+	<link rel="stylesheet" href="/stylesheets/skeleton.css">
+	<link rel="stylesheet" href="/stylesheets/layout.css">
+
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+
+</head>
+<body>
+
+
+
+	<!-- Primary Page Layout
+	================================================== -->
+
+	<!-- Delete everything in this .container and get started on your own site! -->
+
+<div class="container" style="margin-top: 70px;">
+	<div class="one-third column">
+		<a href="/">Arrow</a> - code meets art
+	</div>
+	
+	<div class="two-thirds column" style="text-align:right;"><p><a href="https://github.com/fluentart">github</a></p>
+	</div>
+
+	<hr>
+
+	<div class="sixteen columns" style="margin-bottom: 20px">
+		<h1>Welcome to the dashboard</h1>
+		<p>This is for logged in users</p>
+	
+    <hr>
+    <h1>Geoloc</h1>
+    <script>
+        if (navigator.geolocation) {
+          var timeoutVal = 10 * 1000 * 1000;
+          navigator.geolocation.getCurrentPosition(
+            displayPosition, 
+            displayError,
+            { enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
+          );
+        }
+        else {
+          console.log("Geolocation is not supported by this browser");
+        }
+
+        function displayPosition(position) {
+          console.log("Latitude: " + position.coords.latitude + ", Longitude: " + position.coords.longitude);
+        }
+
+        function displayError(error) {
+          var errors = { 
+            1: 'Permission denied',
+            2: 'Position unavailable',
+            3: 'Request timeout'
+          };
+          console.log("Error: " + errors[error.code]);
+        }        
+    </script>
+
+		<hr>
+
+		<h1>Arrow api</h1>
+		<p>
+			Accounts:<br>
+			<a href="/signup">/signup</a> for new accounts<br>
+			<a href="/login">/login</a> </p>
+
+			<p>
+			Admin:<br>
+			<a href="/api/database">/api/database</a> for during development to see what is in memory.<br><a href="/api/status">/api/status</a> for server status</p>
+
+		<hr>
+
+		<h1>Arduino/Midi streaming data</h1>
+		<p>Be sure to give the command line tool a try. Its for streaming data between arrow and devices.</p>
+
+<p>
+				This is a realtime sensor feed from an arduino.
+			</p>
+			
+			<!-- GRAPHSCOPE by rouan@8bo.org -->
+	<script src="/socket.io/socket.io.js"></script>
+  	<script type="text/javascript" src="/scripts/jquery-1.7.1.min.js"></script>	
+  	<script src="/scripts/processing-1.4.1.min.js"></script>			
+
+
+
+<canvas id="processing" style="width: 100%; height: 100%;"></canvas>  		
+		<script>			
+      var graphconfig = {
+        autosize: true,
+        height: 600,
+        width: 600,
+        background: {
+          r: 39,
+          g: 40,
+          b: 34,
+          a: 255
+        },
+        linecolor: {
+          r: 55,
+          g: 55,
+          b: 55,
+          a: 255          
+        },
+        color: {
+          r: 166,
+          g: 226,
+          b: 46,
+          a: 175
+        },
+        inputrange: 1024, //arduino signals are 0-1024
+        linesv: 10,
+      }
+      $( function() {	
+        //DATA
+        var databuf = []
+
+        /*$.getJSON('/record.json', function(data) {
+            //databuf = JSON.parse(data);
+            databuf = data;
+            
+        });*/
+
+        var socket = io.connect();
+
+        socket.on('data', function (data) { 
+          	//console.log(data)
+          	if (data.type == "adc") { databuf.push(data); }
+        })				 
+
+        //VIEW
+        var view = 
+        {
+          height: 0,
+          width: 0
+        }
+        //CANVAS
+        var arrowCanvas = function (pr) {
+          pr.setup = function () 
+		      {			
+            		pr.size( $("#processing").width(), $("#processing").height() );
+			      	pr.background(graphconfig.background.r,graphconfig.background.g,graphconfig.background.b,graphconfig.background.a);
+			      	pr.frameRate(60);    
+		      };
+
+		      pr.draw = function () 
+		      {
+
+				if (graphconfig.autosize == true) {
+					view.height = $("#processing").height();
+	            	view.width = $("#processing").width();
+	              	graphconfig.width = view.width;              	
+	              	graphconfig.height = view.height;
+	            }
+
+            //clear
+            pr.fill(graphconfig.background.r,graphconfig.background.g,graphconfig.background.b,graphconfig.background.a)
+            pr.noStroke()
+            pr.rect(0,0,view.width,view.height)
+            //lines
+            pr.stroke(45);
+            for (var l = 0; l < graphconfig.linesv; l++) {
+              pr.line(0,(l/graphconfig.linesv)*graphconfig.height,
+                graphconfig.width,(l/graphconfig.linesv)*graphconfig.height);
+            }
+
+            
+            //pr.line(10, 20, 30, 40)  
+            var yprev = 0
+            for (a in databuf) 
+            {                      
+                            
+              //pr.stroke(255,0,0,55)
+              //pr.line((b/1),databuf[b].A0, (b/1)-4,databuf[b].A0) 
+              pr.noStroke();
+              pr.fill(graphconfig.color.r, graphconfig.color.g, graphconfig.color.b, graphconfig.color.a)
+              pr.ellipse( a , databuf[a].A0/graphconfig.inputrange*graphconfig.height, 4, 4)
+              //pr.stroke(0,255,0,155)
+              //pr.line(a,databuf[a].A1, a, 200) 
+            }
+            
+            
+            while (databuf.length > view.width) 
+            {
+                databuf = databuf.slice(databuf.length-view.width, databuf.length)
+            }
+            
+
+          };
+      
+          pr.mouseMoved = function () {}
+          pr.mouseClicked = function () { socket.emit("click", {}); }
+          
+
+        }//END CANVAS
+
+        //LINK TO HTML
+        var canvas = document.getElementById("processing");
+        var processing = new Processing(canvas, arrowCanvas);			  			
+
+        
+
+      }());
+		</script>		
+
+
+			<!-- END GRAPHSCOPE -->
+
+		<pre style="background: #111; padding: 10px;margin-bottom: 10px;"><code>node arrowdevices.js</code></pre>
+
+    <!-- START ANALYTICS API EXAMPLE -->
+      <script>
+        $( function() {
+
+          var query = { 
+            type: "search",
+            matchcase: false,
+            search: {
+              type: "visit",    
+              country: "china"
+              }          
+            }
+        
+        
+          $.post('/api', query, function(data, textStatus) {
+            if (textStatus == "success") { 
+              console.log(data);
+              //$("#data").html(''); 
+              //for (item in data) { insertevent(data[item]); }}
+            }
+            }, "json"); 
+
+        }());
+      </script>
+
+    <!-- END ANALYTICS API EXAMPLE -->
+
+
+		<p style="margin-top: 100px;">developed by <a href="http://fluentart.com">Rouan van der Ende</a>
+	</div>
+
+<!-- container -->
+</div>
+
+</body>
+</html>
